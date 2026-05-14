@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pendientes Corporativo · 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.0/lib/msal-browser.min.js"></script>
+<style>
+:root {
+  --bg: #F7F6F3;
+  --surface: #FFFFFF;
+  --surface2: #F0EFE9;
+  --border: #E2E0D8;
+  --border2: #D0CEC4;
+  --text: #1A1917;
+  --text2: #6B6860;
+  --text3: #A09E97;
+  --accent: #1A1917;
+  --accent-fg: #F7F6F3;
+  --red: #C84B31;
+  --red-bg: #FDF0ED;
+  --orange: #C07A20;
+  --orange-bg: #FDF4E7;
+  --green: #3A7D44;
+  --green-bg: #EEF6F0;
+  --blue: #2B5BA8;
+  --blue-bg: #EDF2FB;
+  --purple: #6B4FA0;
+  --purple-bg: #F3EFFA;
+  --gray: #6B6860;
+  --gray-bg: #F0EFE9;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── AUTH SCREEN ── */
+#authScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 3rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+.auth-logo {
+  width: 48px;
+  height: 48px;
+  background: var(--accent);
+  border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+.auth-logo svg { color: var(--accent-fg); }
+.auth-card h1 { font-size: 20px; font-weight: 600; margin-bottom: .5rem; }
+.auth-card p { color: var(--text2); font-size: 13px; margin-bottom: 2rem; line-height: 1.6; }
+.auth-error { background: var(--red-bg); color: var(--red); font-size: 12px; padding: .75rem 1rem; border-radius: var(--radius); margin-top: 1rem; display: none; }
+
+/* ── MAIN APP ── */
+#appScreen { display: none; min-height: 100vh; }
+
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 12px; }
+.header-logo {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.header-logo svg { width: 16px; height: 16px; color: var(--accent-fg); }
+.header h1 { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
+.header-sub { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; }
+.header-right { display: flex; align-items: center; gap: 8px; }
+.user-badge {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--text2);
+  background: var(--surface2);
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+.user-avatar {
+  width: 22px; height: 22px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600;
+}
+
+.main { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+
+/* ── STATS ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 1.25rem;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.stat-card .label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+.stat-card .value { font-size: 26px; font-weight: 600; line-height: 1; font-family: 'DM Mono', monospace; }
+.stat-card.highlight .value { color: var(--red); }
+.stat-card.process .value { color: var(--orange); }
+.stat-card.done .value { color: var(--green); }
+
+/* ── TOOLBAR ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.toolbar-left { display: flex; gap: 8px; align-items: center; flex: 1; flex-wrap: wrap; }
+.toolbar-right { display: flex; gap: 8px; align-items: center; }
+
+input[type=text], select {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s;
+}
+input[type=text]:focus, select:focus { border-color: var(--border2); }
+#searchInput { width: 200px; }
+#searchInput::placeholder { color: var(--text3); }
+
+.btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: background .12s, border-color .12s;
+}
+.btn:hover { background: var(--surface2); border-color: var(--border2); }
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.btn-primary:hover { background: #333; border-color: #333; }
+.btn-save { background: var(--green); color: #fff; border-color: var(--green); }
+.btn-save:hover { background: #2d6235; }
+.btn-danger { color: var(--red); }
+.btn-danger:hover { background: var(--red-bg); border-color: var(--red); }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+
+/* ── STATUS BAR ── */
+.status-bar {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; color: var(--text2);
+  margin-bottom: .75rem; min-height: 20px;
+}
+.pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 500;
+  padding: 2px 10px; border-radius: 20px;
+}
+.pill-unsaved { background: var(--orange-bg); color: var(--orange); }
+.pill-saved { background: var(--green-bg); color: var(--green); }
+.pill-loading { background: var(--blue-bg); color: var(--blue); }
+
+/* ── TABLE ── */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.table-scroll { overflow-x: auto; max-height: calc(100vh - 320px); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead { position: sticky; top: 0; z-index: 10; }
+thead th {
+  background: var(--surface2);
+  color: var(--text2);
+  font-weight: 500;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  user-select: none;
+  cursor: pointer;
+}
+thead th:hover { color: var(--text); }
+thead th.sorted { color: var(--text); }
+tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--bg); }
+td {
+  padding: 9px 12px;
+  color: var(--text);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+td.wrap { white-space: normal; word-break: break-word; }
+.td-num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); width: 40px; }
+.td-actions { width: 70px; }
+.row-actions { display: flex; gap: 4px; }
+.table-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── BADGES ── */
+.badge {
+  display: inline-block;
+  font-size: 11px; font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.b-urgente { background: var(--purple-bg); color: var(--purple); }
+.b-alta { background: var(--red-bg); color: var(--red); }
+.b-media { background: var(--orange-bg); color: var(--orange); }
+.b-baja { background: var(--green-bg); color: var(--green); }
+.b-archivado { background: var(--gray-bg); color: var(--gray); }
+.b-completado { background: var(--green-bg); color: var(--green); }
+.b-pendiente { background: var(--blue-bg); color: var(--blue); }
+.b-proceso { background: var(--orange-bg); color: var(--orange); }
+.b-espera { background: var(--purple-bg); color: var(--purple); }
+.b-cerrado { background: var(--green-bg); color: var(--green); }
+.b-cancelado { background: var(--red-bg); color: var(--red); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(26,25,23,.45);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp .18s ease;
+}
+@keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header {
+  padding: 1.25rem 1.5rem 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-header h2 { font-size: 15px; font-weight: 600; }
+.modal-close { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 20px; line-height: 1; padding: 4px; }
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 1.25rem 1.5rem; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.field { margin-bottom: 14px; }
+.field.full { grid-column: 1 / -1; }
+.field label { display: block; font-size: 11px; font-weight: 500; color: var(--text2); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .05em; }
+.field input, .field select, .field textarea {
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+.field textarea { resize: vertical; min-height: 72px; }
+.modal-footer {
+  padding: 0 1.5rem 1.5rem;
+  display: flex; justify-content: flex-end; gap: 8px;
+}
+
+/* ── CONFIRM DIALOG ── */
+.confirm-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(26,25,23,.5);
+  z-index: 600;
+  align-items: center; justify-content: center;
+}
+.confirm-overlay.open { display: flex; }
+.confirm-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  max-width: 360px; width: 90%;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+.confirm-box h3 { font-size: 15px; font-weight: 600; margin-bottom: .5rem; }
+.confirm-box p { font-size: 13px; color: var(--text2); margin-bottom: 1.25rem; }
+.confirm-actions { display: flex; gap: 8px; justify-content: center; }
+
+/* ── TOAST ── */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 13px; font-weight: 500;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  animation: toastIn .2s ease;
+  display: flex; align-items: center; gap: 8px;
+  max-width: 340px;
+}
+.toast.err { background: var(--red); }
+.toast.ok { background: var(--green); }
+@keyframes toastIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ── SPINNER ── */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--text2);
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text3);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+    </div>
+    <h1>Pendientes Corporativo</h1>
+    <p>Inicia sesión con tu cuenta Microsoft para acceder y gestionar los pendientes directamente en SharePoint.</p>
+    <button class="btn btn-primary" onclick="signIn()" style="width:100%;justify-content:center;height:42px;font-size:14px">
+      <svg width="16" height="16" viewBox="0 0 23 23" fill="none">
+        <rect x="1" y="1" width="10" height="10" fill="#f25022"/>
+        <rect x="12" y="1" width="10" height="10" fill="#7fba00"/>
+        <rect x="1" y="12" width="10" height="10" fill="#00a4ef"/>
+        <rect x="12" y="12" width="10" height="10" fill="#ffb900"/>
+      </svg>
+      Iniciar sesión con Microsoft
+    </button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="appScreen">
+  <header class="header">
+    <div class="header-left">
+      <div class="header-logo">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Pendientes Corporativo</h1>
+        <div class="header-sub">ENE – JUN 2026</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="user-badge">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span id="userName">...</span>
+      </div>
+      <button class="btn btn-sm" onclick="signOut()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input type="text" id="searchInput" placeholder="Buscar cliente, servicio...">
+        <select id="fAbogado">
+          <option value="">Todos los abogados</option>
+          <option>Arnold</option><option>Diana</option><option>Manrique</option><option>Michelle</option>
+        </select>
+        <select id="fPrioridad">
+          <option value="">Prioridad</option>
+          <option>Urgente</option><option>Alta</option><option>Media</option><option>Baja</option>
+          <option>Archivado</option><option>Completado</option>
+        </select>
+        <select id="fEstatus">
+          <option value="">Estatus</option>
+          <option>Pendiente</option><option>En Proceso</option><option>En Espera</option>
+          <option>Cerrado</option><option>Cancelado</option>
+        </select>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn" onclick="loadData()" id="btnRefresh">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Actualizar
+        </button>
+        <button class="btn btn-primary" onclick="openModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+          Nuevo pendiente
+        </button>
+        <button class="btn btn-save" id="btnSave" onclick="saveToSharePoint()" disabled>
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          Guardar en SharePoint
+        </button>
+      </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+      <span class="spinner" id="loadSpinner" style="display:none"></span>
+      <span id="statusMsg">Cargando...</span>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="td-num" onclick="sortBy('num')">#</th>
+              <th onclick="sortBy('cliente')">Cliente</th>
+              <th onclick="sortBy('servicio')">Servicio / Pendiente</th>
+              <th onclick="sortBy('abogado')">Abogado</th>
+              <th onclick="sortBy('hds')">HDS / Exp.</th>
+              <th onclick="sortBy('prioridad')">Prioridad</th>
+              <th onclick="sortBy('estatus')">Estatus</th>
+              <th onclick="sortBy('fechaLimite')">Fecha límite</th>
+              <th onclick="sortBy('fechaSeg')">Seguimiento</th>
+              <th>Observaciones</th>
+              <th class="td-actions"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState" style="display:none">Sin resultados para los filtros seleccionados.</div>
+      </div>
+      <div class="table-footer">
+        <span id="countLabel">—</span>
+        <span id="lastSaved" style="color:var(--text3)"></span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Nuevo pendiente</h2>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full"><label>Cliente *</label><input id="mCliente" placeholder="Nombre del cliente o empresa"></div>
+        <div class="field full"><label>Servicio / Pendiente *</label><input id="mServicio" placeholder="Descripción del servicio o pendiente"></div>
+        <div class="field">
+          <label>Abogado responsable</label>
+          <select id="mAbogado">
+            <option value="">— Seleccionar —</option>
+            <option>Arnold</option><option>Diana</option><option>Manrique</option><option>Michelle</option>
+            <option>Diana/Mitchell</option><option>Diana Guzman</option><option>Manrique Velasco</option><option>Todos</option>
+          </select>
+        </div>
+        <div class="field"><label>HDS / Expediente</label><input id="mHds" placeholder="ej. 261/2026 o Iguala"></div>
+        <div class="field">
+          <label>Prioridad</label>
+          <select id="mPrioridad">
+            <option value="">— Seleccionar —</option>
+            <option>Urgente</option><option>Alta</option><option>Media</option><option>Baja</option>
+            <option>Archivado</option><option>Completado</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Estatus</label>
+          <select id="mEstatus">
+            <option value="">— Seleccionar —</option>
+            <option>Pendiente</option><option>En Proceso</option><option>En Espera</option>
+            <option>Cerrado</option><option>Cancelado</option>
+          </select>
+        </div>
+        <div class="field"><label>Fecha límite</label><input type="date" id="mFechaLimite"></div>
+        <div class="field"><label>Fecha seguimiento</label><input type="date" id="mFechaSeg"></div>
+        <div class="field full"><label>Observaciones</label><textarea id="mObs" placeholder="Notas, instrucciones o contexto adicional..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveRecord()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+        Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3>Eliminar pendiente</h3>
+    <p>¿Estás seguro que deseas eliminar este registro? Esta acción no se puede deshacer.</p>
+    <div class="confirm-actions">
+      <button class="btn" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── MSAL CONFIG ──────────────────────────────────────────────────────────
+const msalConfig = {
+  auth: {
+    clientId: "516b809f-4d82-4256-beee-c1c91496e1ac", // MS Graph Explorer client ID (public)
+    authority: "https://login.microsoftonline.com/514de3f6-26be-4308-902e-63312d1845ea",
+    redirectUri: window.location.href.split("?")[0]
+  },
+  cache: { cacheLocation: "sessionStorage" }
+};
+
+const loginRequest = {
+  scopes: ["User.Read", "Files.ReadWrite.All", "Sites.ReadWrite.All"]
+};
+
+const _msal = window.msal || window.msalBrowser;
+if (!_msal) { document.body.innerHTML = '<div style="padding:2rem;font-family:sans-serif;color:red">Error: No se pudo cargar la libreria de autenticacion Microsoft (MSAL). Revisa tu conexion e intenta de nuevo.</div>'; throw new Error("MSAL not loaded"); }
+const msalInstance = new _msal.PublicClientApplication(msalConfig);
+
+// ── SHAREPOINT IDs ────────────────────────────────────────────────────────
+const DRIVE_ID = "b!awiV-ZxJk0m6Tz-qi4iJyTqjoc4-YQZFjc6cAgzkNLy6836YVp7bRZJeqVC6Xhrj";
+const ITEM_ID  = "01RT67H2EAJC3LQO462BDZYOB7GV5AQFL4";
+const GRAPH    = "https://graph.microsoft.com/v1.0";
+const BASE     = `${GRAPH}/drives/${DRIVE_ID}/items/${ITEM_ID}/workbook/worksheets`;
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let records   = [];
+let editingIdx = null;
+let deleteIdx  = null;
+let unsaved   = false;
+let sortCol   = "num";
+let sortDir   = 1;
+let sheetName = "";
+let currentUser = null;
+
+// ── MSAL HELPERS ──────────────────────────────────────────────────────────
+async function getAccessToken() {
+  const accounts = msalInstance.getAllAccounts();
+  if (!accounts.length) throw new Error("No hay sesión activa");
+  try {
+    const r = await msalInstance.acquireTokenSilent({ ...loginRequest, account: accounts[0] });
+    return r.accessToken;
+  } catch(e) {
+    const r = await msalInstance.acquireTokenPopup(loginRequest);
+    return r.accessToken;
+  }
+}
+
+async function graphFetch(url, opts = {}) {
+  const token = await getAccessToken();
+  const res = await fetch(url, {
+    ...opts,
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `HTTP ${res.status}`);
+  }
+  return res.json().catch(() => null);
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────────────
+async function signIn() {
+  try {
+    document.getElementById("authError").style.display = "none";
+    await msalInstance.loginPopup(loginRequest);
+    await initApp();
+  } catch(e) {
+    const el = document.getElementById("authError");
+    el.textContent = "Error: " + e.message;
+    el.style.display = "block";
+  }
+}
+
+function signOut() {
+  msalInstance.logoutPopup();
+  document.getElementById("authScreen").style.display = "flex";
+  document.getElementById("appScreen").style.display = "none";
+}
+
+async function initApp() {
+  const accounts = msalInstance.getAllAccounts();
+  if (!accounts.length) return;
+  currentUser = accounts[0];
+  document.getElementById("authScreen").style.display = "none";
+  document.getElementById("appScreen").style.display = "block";
+
+  const initials = (currentUser.name || currentUser.username || "U")
+    .split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2);
+  document.getElementById("userAvatar").textContent = initials;
+  document.getElementById("userName").textContent = currentUser.name || currentUser.username;
+
+  await loadData();
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────────────────────
+async function loadData() {
+  setSpinner(true);
+  setStatus("Conectando a SharePoint...", "loading");
+  document.getElementById("btnRefresh").disabled = true;
+
+  try {
+    // Find the right sheet
+    const sheets = await graphFetch(`${BASE}`);
+    const names = sheets.value.map(s => s.name);
+    sheetName = names.find(n =>
+      n.includes("Pendientes") && !n.includes("Resumen") &&
+      !n.includes("Asamblea") && !n.includes("Guía") && !n.includes("CONTROL")
+    ) || names[0];
+
+    setStatus(`Leyendo hoja "${sheetName}"...`, "loading");
+    const encoded = encodeURIComponent(sheetName);
+    const used = await graphFetch(`${BASE}('${encoded}')/usedRange`);
+    const rows = used.values;
+
+    if (!rows || rows.length < 2) {
+      setStatus("No se encontraron datos.", "");
+      return;
+    }
+
+    // Map headers
+    const header = rows[0];
+    const col = {};
+    header.forEach((h, i) => { if (h) col[String(h).trim().toLowerCase()] = i; });
+
+    const findCol = (...keys) => {
+      for (const k of keys) {
+        const found = Object.entries(col).find(([h]) => h.includes(k.toLowerCase()));
+        if (found) return found[1];
+      }
+      return -1;
+    };
+
+    records = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const clienteVal = r[findCol("cliente")] || "";
+      const servicioVal = r[findCol("servicio", "pendiente")] || "";
+      if (!clienteVal && !servicioVal) continue;
+
+      records.push({
+        _row: i + 1,
+        num:        r[findCol("#", "numero")] || i,
+        cliente:    clienteVal,
+        servicio:   servicioVal,
+        hds:        r[findCol("hds", "expediente")] || "",
+        abogado:    r[findCol("abogado")] || "",
+        prioridad:  r[findCol("prioridad")] || "",
+        fechaLimite:r[findCol("fecha l", "fecha_l")] || "",
+        fechaSeg:   r[findCol("seguimiento", "fecha s")] || "",
+        estatus:    r[findCol("estatus")] || "",
+        obs:        r[findCol("observ")] || "",
+      });
+    }
+
+    unsaved = false;
+    document.getElementById("btnSave").disabled = true;
+    setStatus(`${records.length} pendientes cargados · ${new Date().toLocaleTimeString("es-MX")}`, "");
+    render();
+    renderStats();
+    toast(`${records.length} pendientes cargados desde SharePoint`, "ok");
+  } catch(err) {
+    setStatus("Error: " + err.message, "err");
+    toast("Error al cargar: " + err.message, "err");
+  }
+
+  setSpinner(false);
+  document.getElementById("btnRefresh").disabled = false;
+}
+
+// ── SAVE TO SHAREPOINT ────────────────────────────────────────────────────
+async function saveToSharePoint() {
+  setSpinner(true);
+  setStatus("Guardando en SharePoint...", "loading");
+  document.getElementById("btnSave").disabled = true;
+
+  try {
+    const encoded = encodeURIComponent(sheetName);
+
+    // Read current header row to preserve it
+    const used = await graphFetch(`${BASE}('${encoded}')/usedRange`);
+    const totalOldRows = used.values.length;
+
+    // Write data rows (starting at row 2, keep header)
+    const values = records.map(r => [
+      r.num, r.cliente, r.servicio, r.hds,
+      r.abogado, r.prioridad, r.fechaLimite,
+      r.fechaSeg, r.estatus, r.obs
+    ]);
+
+    const endRow = 1 + records.length;
+    await graphFetch(`${BASE}('${encoded}')/range(address='A2:J${endRow}')`, {
+      method: "PATCH",
+      body: JSON.stringify({ values })
+    });
+
+    // Clear any extra rows below
+    if (totalOldRows > endRow) {
+      await graphFetch(
+        `${BASE}('${encoded}')/range(address='A${endRow+1}:J${totalOldRows}')/clear`,
+        { method: "POST", body: JSON.stringify({ applyTo: "contents" }) }
+      );
+    }
+
+    unsaved = false;
+    const now = new Date().toLocaleTimeString("es-MX");
+    setStatus(`Guardado correctamente · ${now}`, "saved");
+    document.getElementById("lastSaved").textContent = `Último guardado: ${now}`;
+    toast("Cambios guardados en SharePoint ✓", "ok");
+  } catch(err) {
+    setStatus("Error al guardar: " + err.message, "err");
+    toast("Error al guardar: " + err.message, "err");
+    document.getElementById("btnSave").disabled = false;
+  }
+
+  setSpinner(false);
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function getFiltered() {
+  const q  = (document.getElementById("searchInput").value || "").toLowerCase();
+  const ab = (document.getElementById("fAbogado").value || "").toLowerCase();
+  const pr = document.getElementById("fPrioridad").value;
+  const es = document.getElementById("fEstatus").value;
+
+  return records.filter(r => {
+    if (q && !String(r.cliente).toLowerCase().includes(q) &&
+            !String(r.servicio).toLowerCase().includes(q) &&
+            !String(r.obs).toLowerCase().includes(q)) return false;
+    if (ab && !String(r.abogado).toLowerCase().includes(ab)) return false;
+    if (pr && String(r.prioridad) !== pr) return false;
+    if (es && String(r.estatus) !== es) return false;
+    return true;
+  }).sort((a, b) => {
+    const av = String(a[sortCol] || "").toLowerCase();
+    const bv = String(b[sortCol] || "").toLowerCase();
+    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+  });
+}
+
+function prioBadge(p) {
+  if (!p) return "";
+  const map = { urgente:"urgente", alta:"alta", media:"media", baja:"baja", archivado:"archivado", completado:"completado" };
+  const key = Object.keys(map).find(k => String(p).toLowerCase().includes(k)) || "baja";
+  return `<span class="badge b-${map[key]}">${p}</span>`;
+}
+function statBadge(s) {
+  if (!s) return "";
+  const map = { "en proceso":"proceso", "en espera":"espera", "cerrado":"cerrado", "cancelado":"cancelado", "pendiente":"pendiente" };
+  const key = Object.keys(map).find(k => String(s).toLowerCase().includes(k));
+  return key ? `<span class="badge b-${map[key]}">${s}</span>` : `<span style="font-size:12px">${s}</span>`;
+}
+
+function render() {
+  const rows = getFiltered();
+  const tbody = document.getElementById("tbody");
+  const empty = document.getElementById("emptyState");
+  tbody.innerHTML = "";
+  document.getElementById("countLabel").textContent =
+    `Mostrando ${rows.length} de ${records.length} registros`;
+
+  if (!rows.length) { empty.style.display = "block"; return; }
+  empty.style.display = "none";
+
+  rows.forEach(r => {
+    const idx = records.indexOf(r);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="td-num">${r.num}</td>
+      <td style="font-weight:500;max-width:140px" title="${r.cliente}">${r.cliente}</td>
+      <td style="max-width:220px;color:var(--text2)" title="${r.servicio}">${r.servicio}</td>
+      <td style="max-width:110px" title="${r.abogado}">${r.abogado || "—"}</td>
+      <td style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${r.hds || "—"}</td>
+      <td>${prioBadge(r.prioridad)}</td>
+      <td>${statBadge(r.estatus)}</td>
+      <td style="font-size:11px;color:var(--text3)">${r.fechaLimite || "—"}</td>
+      <td style="font-size:11px;color:var(--text3)">${r.fechaSeg || "—"}</td>
+      <td style="max-width:180px;font-size:11px;color:var(--text2)" title="${r.obs}">${r.obs || ""}</td>
+      <td class="td-actions">
+        <div class="row-actions">
+          <button class="btn btn-sm" onclick="editRecord(${idx})" title="Editar">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="askDelete(${idx})" title="Eliminar">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderStats() {
+  const all = records;
+  const alta = all.filter(r => ["alta","urgente"].includes(String(r.prioridad||"").toLowerCase())).length;
+  const enP  = all.filter(r => String(r.estatus||"").toLowerCase().includes("proceso")).length;
+  const comp = all.filter(r => String(r.prioridad||"").toLowerCase()==="completado" ||
+                               String(r.estatus||"").toLowerCase()==="cerrado").length;
+  const byAbogado = {Arnold:0, Diana:0, Manrique:0, Michelle:0};
+  all.forEach(r => {
+    for (const k in byAbogado) {
+      if (String(r.abogado||"").includes(k)) byAbogado[k]++;
+    }
+  });
+
+  document.getElementById("statsGrid").innerHTML = `
+    <div class="stat-card"><div class="label">Total</div><div class="value">${all.length}</div></div>
+    <div class="stat-card highlight"><div class="label">Alta prioridad</div><div class="value">${alta}</div></div>
+    <div class="stat-card process"><div class="label">En proceso</div><div class="value">${enP}</div></div>
+    <div class="stat-card done"><div class="label">Completados</div><div class="value">${comp}</div></div>
+    ${Object.entries(byAbogado).map(([k,v]) =>
+      `<div class="stat-card"><div class="label">${k}</div><div class="value">${v}</div></div>`
+    ).join("")}
+  `;
+}
+
+// ── SORT ──────────────────────────────────────────────────────────────────
+function sortBy(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  render();
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────
+function openModal(idx = null) {
+  editingIdx = idx;
+  const r = idx !== null ? records[idx] : null;
+  document.getElementById("modalTitle").textContent = r ? "Editar pendiente" : "Nuevo pendiente";
+  document.getElementById("mCliente").value      = r?.cliente || "";
+  document.getElementById("mServicio").value     = r?.servicio || "";
+  document.getElementById("mAbogado").value      = r?.abogado || "";
+  document.getElementById("mHds").value          = r?.hds || "";
+  document.getElementById("mPrioridad").value    = r?.prioridad || "";
+  document.getElementById("mEstatus").value      = r?.estatus || "";
+  document.getElementById("mFechaLimite").value  = r?.fechaLimite || "";
+  document.getElementById("mFechaSeg").value     = r?.fechaSeg || "";
+  document.getElementById("mObs").value          = r?.obs || "";
+  document.getElementById("modalOverlay").classList.add("open");
+  setTimeout(() => document.getElementById("mCliente").focus(), 100);
+}
+function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); }
+
+function editRecord(idx) { openModal(idx); }
+
+function saveRecord() {
+  const cliente  = document.getElementById("mCliente").value.trim();
+  const servicio = document.getElementById("mServicio").value.trim();
+  if (!cliente || !servicio) { toast("Cliente y servicio son requeridos", "err"); return; }
+
+  const obj = {
+    _row:        editingIdx !== null ? records[editingIdx]._row : null,
+    num:         editingIdx !== null ? records[editingIdx].num : records.length + 1,
+    cliente, servicio,
+    abogado:     document.getElementById("mAbogado").value,
+    hds:         document.getElementById("mHds").value.trim(),
+    prioridad:   document.getElementById("mPrioridad").value,
+    estatus:     document.getElementById("mEstatus").value,
+    fechaLimite: document.getElementById("mFechaLimite").value,
+    fechaSeg:    document.getElementById("mFechaSeg").value,
+    obs:         document.getElementById("mObs").value.trim()
+  };
+
+  if (editingIdx !== null) records[editingIdx] = obj;
+  else records.push(obj);
+
+  closeModal();
+  markUnsaved();
+  render();
+  renderStats();
+  toast(editingIdx !== null ? "Pendiente actualizado" : "Pendiente agregado", "ok");
+}
+
+// ── DELETE ────────────────────────────────────────────────────────────────
+function askDelete(idx) {
+  deleteIdx = idx;
+  document.getElementById("confirmOverlay").classList.add("open");
+}
+function closeConfirm() {
+  document.getElementById("confirmOverlay").classList.remove("open");
+  deleteIdx = null;
+}
+function confirmDelete() {
+  if (deleteIdx === null) return;
+  records.splice(deleteIdx, 1);
+  closeConfirm();
+  markUnsaved();
+  render();
+  renderStats();
+  toast("Pendiente eliminado", "ok");
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function markUnsaved() {
+  unsaved = true;
+  document.getElementById("btnSave").disabled = false;
+  setStatus('<span class="pill pill-unsaved">● Cambios sin guardar en SharePoint</span>', "");
+}
+
+function setSpinner(v) {
+  document.getElementById("loadSpinner").style.display = v ? "inline-block" : "none";
+}
+
+function setStatus(html, type) {
+  document.getElementById("statusMsg").innerHTML = html;
+}
+
+function toast(msg, type = "") {
+  const el = document.createElement("div");
+  el.className = "toast" + (type === "err" ? " err" : type === "ok" ? " ok" : "");
+  el.textContent = msg;
+  document.getElementById("toastContainer").appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────
+document.getElementById("searchInput").addEventListener("input", render);
+document.getElementById("fAbogado").addEventListener("change", render);
+document.getElementById("fPrioridad").addEventListener("change", render);
+document.getElementById("fEstatus").addEventListener("change", render);
+
+document.getElementById("modalOverlay").addEventListener("click", e => {
+  if (e.target === document.getElementById("modalOverlay")) closeModal();
+});
+document.getElementById("confirmOverlay").addEventListener("click", e => {
+  if (e.target === document.getElementById("confirmOverlay")) closeConfirm();
+});
+
+// Keyboard shortcuts
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { closeModal(); closeConfirm(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === "s" && !document.getElementById("btnSave").disabled) {
+    e.preventDefault(); saveToSharePoint();
+  }
+});
+
+// ── BOOT ──────────────────────────────────────────────────────────────────
+(async () => {
+  try {
+    if (msalInstance.initialize) await msalInstance.initialize();
+    // Handle redirect
+    if (msalInstance.handleRedirectPromise) await msalInstance.handleRedirectPromise().catch(()=>{});
+    const accounts = msalInstance.getAllAccounts();
+    if (accounts.length) await initApp();
+  } catch(e) {
+    console.error(e);
+  }
+})();
+</script>
+</body>
+</html>
